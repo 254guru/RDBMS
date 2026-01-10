@@ -1,4 +1,4 @@
-# PesaPal RDBMS — Reference
+# PesaPal RDBMS Challenge
 
 A concise reference for the PesaPal RDBMS implementation. This file documents the system, key features, and how to use the project; for step-by-step tutorials and examples see `GUIDE.md`.
 
