@@ -1,0 +1,45 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.class
+*.so
+*.egg-info/
+dist/
+build/
+wheels/
+env/
+venv/
+.venv/
+ENV/
+pip-wheel-metadata/
+# --- Virtualenv and env files ---
+.env
+.env.*
+instance/
+# --- Database / data files ---
+db/
+*.db
+*.sqlite
+*.sqlite3
+*.json
+# --- Logs ---
+*.log
+# --- Coverage / pytest ---
+.coverage
+htmlcov/
+.pytest_cache/
+# --- Editor / OS ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*~
+*.swp
+*.swo
+# --- Node ---
+node_modules/
+# --- Misc ---
+*.egg
+*.egg-info/
+dist/
+build/

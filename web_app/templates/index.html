@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PesaPal Merchant Directory</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Merchant Directory</h1>
+            <p>Manage merchants and categories using our RDBMS</p>
+        </header>
+
+        <nav class="tabs">
+            <button class="tab-button active" data-tab="merchants">Merchants</button>
+            <button class="tab-button" data-tab="add-merchant">Add Merchant</button>
+            <button class="tab-button" data-tab="categories">Categories</button>
+            <button class="tab-button" data-tab="query">SQL Query</button>
+        </nav>
+
+        <!-- Merchants Tab -->
+        <div id="merchants" class="tab-content active">
+            <h2>All Merchants</h2>
+            <div id="merchants-list" class="merchants-grid">
+                <!-- Populated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Add Merchant Tab -->
+        <div id="add-merchant" class="tab-content">
+            <h2>Add New Merchant</h2>
+            <form id="add-merchant-form" class="form">
+                <div class="form-group">
+                    <label for="merchant-id">Merchant ID:</label>
+                    <input type="number" id="merchant-id" required>
+                </div>
+                <div class="form-group">
+                    <label for="merchant-name">Name:</label>
+                    <input type="text" id="merchant-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="merchant-category">Category:</label>
+                    <select id="merchant-category" required>
+                        <option value="">Select a category...</option>
+                        <!-- Populated by JavaScript -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="merchant-active">Active:</label>
+                    <input type="checkbox" id="merchant-active" checked>
+                </div>
+                <button type="submit" class="btn btn-primary">Add Merchant</button>
+                <div id="add-merchant-message" class="message"></div>
+            </form>
+        </div>
+
+        <!-- Categories Tab -->
+        <div id="categories" class="tab-content">
+            <h2>Categories</h2>
+            <div id="categories-list" class="categories-list">
+                <!-- Populated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- SQL Query Tab -->
+        <div id="query" class="tab-content">
+            <h2>Execute SQL Query</h2>
+            <div class="query-section">
+                <textarea id="sql-query" placeholder="Enter SQL query..." rows="6"></textarea>
+                <button onclick="executeQuery()" class="btn btn-primary">Execute</button>
+            </div>
+            <div id="query-result" class="query-result"></div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

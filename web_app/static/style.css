@@ -1,0 +1,422 @@
+/* PesaPal RDBMS Web App Styles */
+
+:root {
+    --primary: #2c3e50;
+    --secondary: #3498db;
+    --success: #27ae60;
+    --danger: #e74c3c;
+    --warning: #f39c12;
+    --light: #ecf0f1;
+    --dark: #2c3e50;
+    --border: #bdc3c7;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+}
+
+header {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    color: white;
+    padding: 40px 20px;
+    text-align: center;
+}
+
+header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+}
+
+header p {
+    font-size: 1.1rem;
+    opacity: 0.9;
+}
+
+.tabs {
+    display: flex;
+    border-bottom: 2px solid var(--light);
+    background: #f8f9fa;
+}
+
+.tab-button {
+    flex: 1;
+    padding: 15px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 1rem;
+    color: var(--dark);
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+}
+
+.tab-button:hover {
+    background: #e9ecef;
+}
+
+.tab-button.active {
+    color: var(--secondary);
+    border-bottom-color: var(--secondary);
+    background: white;
+}
+
+.tab-content {
+    display: none;
+    padding: 40px;
+    animation: fadeIn 0.3s ease;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+h2 {
+    color: var(--dark);
+    margin-bottom: 30px;
+    font-size: 1.8rem;
+}
+
+/* Merchant Grid */
+.merchants-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.merchant-card {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    background: #f8f9fa;
+    transition: all 0.3s ease;
+}
+
+.merchant-card:hover {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    transform: translateY(-5px);
+}
+
+.merchant-card h3 {
+    color: var(--secondary);
+    margin-bottom: 10px;
+}
+
+.merchant-card .info {
+    margin: 10px 0;
+    color: #555;
+}
+
+.merchant-card .label {
+    font-weight: 600;
+    color: var(--dark);
+}
+
+.merchant-card .status {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    margin-top: 10px;
+}
+
+.merchant-card .status.active {
+    background: #d4edda;
+    color: var(--success);
+}
+
+.merchant-card .status.inactive {
+    background: #f8d7da;
+    color: var(--danger);
+}
+
+.merchant-card .actions {
+    margin-top: 15px;
+    display: flex;
+    gap: 10px;
+}
+
+.merchant-card button {
+    flex: 1;
+    padding: 8px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.merchant-card .btn-edit {
+    background: var(--secondary);
+    color: white;
+}
+
+.merchant-card .btn-delete {
+    background: var(--danger);
+    color: white;
+}
+
+.merchant-card .btn-edit:hover {
+    background: #2980b9;
+}
+
+.merchant-card .btn-delete:hover {
+    background: #c0392b;
+}
+
+/* Forms */
+.form {
+    max-width: 500px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--dark);
+    font-weight: 600;
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+.form-group input[type="text"]:focus,
+.form-group input[type="number"]:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--secondary);
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.form-group input[type="checkbox"] {
+    margin-right: 10px;
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.message {
+    margin-top: 15px;
+    padding: 12px;
+    border-radius: 5px;
+    display: none;
+}
+
+.message.success {
+    display: block;
+    background: #d4edda;
+    color: var(--success);
+    border: 1px solid var(--success);
+}
+
+.message.error {
+    display: block;
+    background: #f8d7da;
+    color: var(--danger);
+    border: 1px solid var(--danger);
+}
+
+/* Buttons */
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: var(--secondary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #2980b9;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+}
+
+/* Categories List */
+.categories-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.category-card {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+.category-card h3 {
+    color: var(--dark);
+    margin-bottom: 10px;
+}
+
+.category-card p {
+    color: #555;
+    font-size: 0.95rem;
+}
+
+/* Query Section */
+.query-section {
+    margin-bottom: 30px;
+}
+
+#sql-query {
+    width: 100%;
+    padding: 15px;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    font-family: 'Courier New', monospace;
+    font-size: 1rem;
+    resize: vertical;
+}
+
+#sql-query:focus {
+    outline: none;
+    border-color: var(--secondary);
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.query-section button {
+    margin-top: 15px;
+}
+
+.query-result {
+    margin-top: 30px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 5px;
+    display: none;
+}
+
+.query-result.active {
+    display: block;
+}
+
+.query-result table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 5px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.query-result th {
+    background: var(--secondary);
+    color: white;
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+}
+
+.query-result td {
+    padding: 12px;
+    border-bottom: 1px solid var(--light);
+}
+
+.query-result tr:hover {
+    background: #f8f9fa;
+}
+
+.query-result .error {
+    color: var(--danger);
+    background: #f8d7da;
+    padding: 15px;
+    border-radius: 5px;
+    border: 1px solid var(--danger);
+}
+
+.query-result .success-message {
+    color: var(--success);
+    background: #d4edda;
+    padding: 15px;
+    border-radius: 5px;
+    border: 1px solid var(--success);
+    margin-bottom: 15px;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 40px;
+    color: #999;
+}
+
+.empty-state p {
+    font-size: 1.1rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    header h1 {
+        font-size: 1.8rem;
+    }
+
+    .tabs {
+        flex-wrap: wrap;
+    }
+
+    .tab-button {
+        flex: 0 1 50%;
+    }
+
+    .merchants-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .form {
+        max-width: 100%;
+    }
+
+    .tab-content {
+        padding: 20px;
+    }
+}
