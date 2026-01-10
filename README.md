@@ -87,20 +87,6 @@ Contributing and next steps
 - Add unit tests if you expand features.
 - Run `./verify.sh` before submitting or pushing changes.
 
-## Code Quality
-
-**Metrics**:
-- 1,377 lines of core engine code (5 modules)
-- 950 lines of web application code
-- Type hints throughout
-- Comprehensive error handling
-- Clear module separation
-
-**Principles**:
-- Layered architecture
-- Single responsibility per module
-- Extensive inline documentation
-- Minimal external dependencies
 
 ## Troubleshooting
 
