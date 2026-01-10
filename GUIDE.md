@@ -1,7 +1,5 @@
 # PesaPal RDBMS - Getting Started Guide
 
-## Quick Start
-
 
 # GUIDE — Quickstart & Examples
 
