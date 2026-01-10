@@ -498,4 +498,4 @@ Solution: Check SQL syntax, review examples above
 
 ---
 
-**Ready to get started?** Run `./launch.sh` now! 🚀
+**Ready to get started?** Run `./launch.sh` now!

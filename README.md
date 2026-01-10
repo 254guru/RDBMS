@@ -139,5 +139,3 @@ Contributing and next steps
 - Both interfaces (REPL and Web) operational
 - Comprehensive documentation
 - Ready for PesaPal JDEV26 submission
-
-Built with clear thinking and determination
