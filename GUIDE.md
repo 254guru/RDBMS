@@ -2,101 +2,101 @@
 
 ## Quick Start
 
-### Step 1: Verify Installation
+
+# GUIDE — Quickstart & Examples
+
+Step-by-step usage, short examples, and pointers for the PesaPal RDBMS. For a concise system reference, see `README.md`.
+
+Prerequisites
+-------------
+
+- Python 3.8+ (validated with 3.12)
+- Install Flask if you plan to run the web demo: `pip install flask`
+
+Prepare
+-------
+
 ```bash
-cd /home/ggonza/Projects/PesaPal
 chmod +x *.sh
-./verify.sh
+./verify.sh        # optional health check
+./launch.sh        # interactive menu and shortcuts
 ```
 
-You should see all Checks are OK
+REPL (CLI)
+----------
 
-### Step 2: Launch the System
+Start the REPL:
+
 ```bash
-./launch.sh
+python3 main.py
 ```
 
-### Step 3: Choose Your Mode
+Common SQL commands supported:
 
-#### Option 1: Interactive REPL (Recommended for First-Time)
+- `CREATE TABLE name (col INT PRIMARY KEY, ...)`
+- `INSERT INTO name (cols) VALUES (values)`
+- `SELECT * FROM name WHERE ...`
+- `UPDATE name SET col = val WHERE ...`
+- `DELETE FROM name WHERE ...`
+- `SCHEMA <table>` — show schema
+- `TABLES` — list tables
+
+Example session:
+
 ```
-1) Run Interactive REPL (CLI)
-2) Run Web Application (Flask)
-3) Run Example Demo
-4) Run System Tests
-5) View Documentation
-6) Exit
-
-Enter your choice (1-6): 1
-```
-
-Try these commands:
-```sql
-CREATE TABLE products (id INT PRIMARY KEY, name TEXT UNIQUE, price INT)
-INSERT INTO products (id, name, price) VALUES (1, 'Laptop', 1000)
-INSERT INTO products (id, name, price) VALUES (2, 'Mouse', 50)
-SELECT * FROM products
-SELECT * FROM products WHERE price > 60
-UPDATE products SET price = 45 WHERE id = 2
-TABLES
-SCHEMA products
-DELETE FROM products WHERE id = 1
-EXIT
+CREATE TABLE merchants (id INT PRIMARY KEY, name TEXT UNIQUE, category TEXT)
+INSERT INTO merchants (id, name, category) VALUES (1, 'Store A', 'Retail')
+SELECT * FROM merchants
+UPDATE merchants SET category = 'Retail Plus' WHERE id = 1
+DELETE FROM merchants WHERE id = 1
 ```
 
-#### Option 2: Web Application
-```
-Enter your choice (1-6): 2
+Web Demo
+--------
 
-📍 Open your browser at: http://localhost:5000
-```
+Run the Flask demo:
 
-Features:
-- **Merchants Tab**: View all merchants
-- **Add Merchant**: Create new merchant entries
-- **Categories Tab**: Browse categories
-- **SQL Query Tab**: Run custom SQL queries
-
-#### Option 3: Example Demo
-```
-Enter your choice (1-6): 3
+```bash
+cd web_app && python3 app.py
 ```
 
-Shows a complete working example with:
-- Table creation
-- Data insertion
-- Querying
-- Filtering
-- Joins
-- Performance metrics
+Open `http://localhost:5000` to interact with the UI. The demo exposes a small REST API:
 
----
+- `GET /api/merchants`
+- `POST /api/merchants`
+- `POST /api/query` — execute SQL
 
-## Common SQL Operations
+Programmatic usage
+-------------------
 
-### Creating Tables
+Use the engine and parser in other Python scripts:
 
-```sql
--- Simple table
-CREATE TABLE users (id INT PRIMARY KEY, name TEXT)
+```python
+from rdbms.storage import Database
+from rdbms.parser import SQLParser
+from rdbms.engine import ExecutionEngine
 
--- Table with constraints
-CREATE TABLE accounts (
-    id INT PRIMARY KEY,
-    email TEXT UNIQUE NOT NULL,
-    balance INT,
-    active BOOLEAN
-)
+db = Database('./my_db')
+parser = SQLParser()
+engine = ExecutionEngine(db)
 
--- Multiple unique constraints
-CREATE TABLE transactions (
-    id INT PRIMARY KEY,
-    from_user INT,
-    to_user INT,
-    amount INT NOT NULL,
-    timestamp TEXT
-)
+engine.execute(parser.parse('CREATE TABLE users (id INT PRIMARY KEY, name TEXT)'))
+engine.execute(parser.parse('INSERT INTO users (id, name) VALUES (1, "Alice")'))
+res = engine.execute(parser.parse('SELECT * FROM users'))
 ```
+
+Notes & files
+-------------
+
+- Persistent JSON files are stored under `db/` and `web_app/db/` (ignored by `.gitignore`).
+- Core modules: `rdbms/types.py`, `rdbms/storage.py`, `rdbms/parser.py`, `rdbms/engine.py`, `rdbms/repl.py`.
+- For debugging and examples, see `example.py`.
+
+Next steps
+----------
+
+- Want deeper docs? I can add a developer walkthrough for the parser or storage internals.
+- Want me to run the project verification now and report results? I can run `./verify.sh` and show the output.
 
 ### Inserting Data
 
