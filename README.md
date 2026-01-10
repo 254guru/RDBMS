@@ -1,4 +1,3 @@
----
 # PesaPal RDBMS — Reference
 
 A concise reference for the PesaPal RDBMS implementation. This file documents the system, key features, and how to use the project; for step-by-step tutorials and examples see `GUIDE.md`.
@@ -88,15 +87,6 @@ Contributing and next steps
 - Add unit tests if you expand features.
 - Run `./verify.sh` before submitting or pushing changes.
 
----
-
-If you want, I can now rewrite `GUIDE.md` to match this concise reference and keep examples brief and non-redundant.
-- Use proper logging
-- Add comprehensive error handling
-- Optimize for scale
-
----
-
 ## Code Quality
 
 **Metrics**:
@@ -112,8 +102,6 @@ If you want, I can now rewrite `GUIDE.md` to match this concise reference and ke
 - Extensive inline documentation
 - Minimal external dependencies
 
----
-
 ## Troubleshooting
 
 ### Issue: Module import errors
@@ -126,34 +114,20 @@ If you want, I can now rewrite `GUIDE.md` to match this concise reference and ke
 **Solution**: Ensure port 5000 is available, run `cd web_app && python3 app.py`
 
 ### Issue: SQL errors
-**Solution**: Check syntax in TESTING.md for examples, review error message carefully
-
----
-
-## File Statistics
-
-```
-Core RDBMS:      1,377 lines (5 Python files)
-Web Application:   950 lines (4 files: Python, HTML, CSS, JS)
-Documentation:   Comprehensive with examples
-```
+**Solution**: Check syntax in examples and review error message carefully
 
 **Key Files**:
 - `rdbms/storage.py` - Largest module (324 lines) with storage engine
 - `rdbms/parser.py` - SQL parsing logic (379 lines)
 - `web_app/static/style.css` - UI styling (446 lines)
 
----
-
 ## Support
 
-- Check GUIDE.md for getting started
+- Check `GUIDE.md` for getting started
 - Review test examples in verify.sh
 - Examine example.py for feature demonstrations
 - Run `./launch.sh` for interactive menu
 - Check code comments for implementation details
-
----
 
 ## Project Status
 
@@ -166,8 +140,4 @@ Documentation:   Comprehensive with examples
 - Comprehensive documentation
 - Ready for PesaPal JDEV26 submission
 
-**Deadline**: January 17, 2026
-
----
-
-Built with clear thinking and determination ✨
+Built with clear thinking and determination
