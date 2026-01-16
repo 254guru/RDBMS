@@ -324,6 +324,14 @@ h2 {
     box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
 }
 
+.query-section .hint {
+    font-size: 0.9rem;
+    color: #666;
+    margin-top: 8px;
+    margin-bottom: 15px;
+    font-style: italic;
+}
+
 .query-section button {
     margin-top: 15px;
 }
@@ -419,4 +427,31 @@ h2 {
     .tab-content {
         padding: 20px;
     }
+}
+
+/* Notification animations */
+@keyframes slideIn {
+    from {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+}
+
+.refresh-notification {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }

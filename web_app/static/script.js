@@ -211,8 +211,28 @@ function executeQuery() {
             
             resultDiv.innerHTML = html;
             resultDiv.classList.add('active');
+            
+            // Auto-refresh affected tables based on query type and affected table
+            const sqlUpper = sql.toUpperCase();
+            if (sqlUpper.includes('INSERT') || sqlUpper.includes('UPDATE') || sqlUpper.includes('DELETE')) {
+                // Use the affected_table from the API response for accuracy
+                const affectedTable = data.affected_table;
+                
+                if (affectedTable === 'merchants' || affectedTable === 'MERCHANTS') {
+                    setTimeout(() => {
+                        loadMerchants();
+                        showRefreshNotification('Merchants list updated');
+                    }, 300);
+                }
+                if (affectedTable === 'categories' || affectedTable === 'CATEGORIES') {
+                    setTimeout(() => {
+                        loadCategories();
+                        showRefreshNotification('Categories list updated');
+                    }, 300);
+                }
+            }
         } else {
-            resultDiv.innerHTML = `<div class="error">Error: ${data.error}</div>`;
+            resultDiv.innerHTML = `<div class="error">Error: ${data.message}</div>`;
             resultDiv.classList.add('active');
         }
     })
@@ -222,6 +242,32 @@ function executeQuery() {
         resultDiv.innerHTML = `<div class="error">Error: ${error.message}</div>`;
         resultDiv.classList.add('active');
     });
+}
+
+// Show temporary notification
+function showRefreshNotification(message) {
+    const notification = document.createElement('div');
+    notification.className = 'refresh-notification';
+    notification.textContent = '✓ ' + message;
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background-color: #4caf50;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 4px;
+        font-size: 14px;
+        z-index: 1000;
+        animation: slideIn 0.3s ease-in-out;
+    `;
+    document.body.appendChild(notification);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease-in-out';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
 }
 
 // Load initial data

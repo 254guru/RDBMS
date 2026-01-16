@@ -194,25 +194,61 @@ def merchants_by_category(category):
 
 @app.route("/api/query", methods=["POST"])
 def execute_query():
-    """Execute a custom SQL query."""
+    """Execute a custom SQL query or multiple queries separated by semicolons."""
     data = request.get_json()
     sql = data.get("sql", "").strip()
     
     if not sql:
-        return jsonify({"error": "No SQL provided"}), 400
+        return jsonify({
+            "success": False,
+            "message": "No SQL provided",
+            "data": [],
+            "affected_table": None
+        }), 400
     
     try:
-        stmt = parser.parse(sql)
-        result = engine.execute(stmt)
+        # Split multiple statements by semicolon
+        statements = [s.strip() for s in sql.split(';') if s.strip()]
+        
+        if not statements:
+            return jsonify({
+                "success": False,
+                "message": "No valid SQL statements found",
+                "data": [],
+                "affected_table": None
+            }), 400
+        
+        # Execute each statement
+        last_result = None
+        affected_tables = set()
+        
+        for statement in statements:
+            stmt = parser.parse(statement)
+            result = engine.execute(stmt)
+            
+            # Track affected tables
+            if hasattr(stmt, 'table_name'):
+                affected_tables.add(stmt.table_name)
+            
+            last_result = result
+        
+        # Return the result of the last statement
+        affected_table = list(affected_tables)[0] if affected_tables else None
         
         return jsonify({
-            "success": result.success,
-            "message": result.message,
-            "data": result.data,
+            "success": last_result.success,
+            "message": last_result.message,
+            "data": last_result.data,
+            "affected_table": affected_table
         })
     
     except Exception as e:
-        return jsonify({"error": str(e)}), 400
+        return jsonify({
+            "success": False,
+            "message": str(e),
+            "data": [],
+            "affected_table": None
+        }), 400
 
 
 if __name__ == "__main__":
