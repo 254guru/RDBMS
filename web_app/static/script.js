@@ -1,5 +1,8 @@
 // PesaPal RDBMS Web App JavaScript
 
+// Track merchant being deleted
+let merchantToDelete = null;
+
 // Tab switching
 document.querySelectorAll('.tab-button').forEach(button => {
     button.addEventListener('click', () => {
@@ -18,14 +21,32 @@ document.querySelectorAll('.tab-button').forEach(button => {
             loadMerchants();
         } else if (tabName === 'categories') {
             loadCategories();
+        } else if (tabName === 'query') {
+            loadSchema();
         }
     });
+});
+
+// Schema toggle in SQL Query tab
+document.addEventListener('DOMContentLoaded', () => {
+    const schemaHeader = document.querySelector('.schema-section h3');
+    if (schemaHeader) {
+        schemaHeader.addEventListener('click', () => {
+            const schemaList = document.getElementById('schema-list');
+            const arrow = schemaHeader.querySelector('.toggle-arrow');
+            schemaList.style.display = schemaList.style.display === 'none' ? 'block' : 'none';
+            arrow.textContent = schemaList.style.display === 'none' ? '▶' : '▼';
+        });
+    }
 });
 
 // Load merchants
 function loadMerchants() {
     fetch('/api/merchants')
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) throw new Error('Failed to load merchants');
+            return response.json();
+        })
         .then(merchants => {
             const container = document.getElementById('merchants-list');
             
@@ -59,7 +80,10 @@ function loadMerchants() {
 // Load categories and populate form
 function loadCategories() {
     fetch('/api/categories')
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) throw new Error('Failed to load categories');
+            return response.json();
+        })
         .then(categories => {
             // Update categories display
             const container = document.getElementById('categories-list');
@@ -86,82 +110,310 @@ function loadCategories() {
         .catch(error => console.error('Error loading categories:', error));
 }
 
-// Add merchant
-document.getElementById('add-merchant-form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    
-    const id = document.getElementById('merchant-id').value;
-    const name = document.getElementById('merchant-name').value;
-    const category = document.getElementById('merchant-category').value;
-    const active = document.getElementById('merchant-active').checked;
-    
-    fetch('/api/merchants', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            id: parseInt(id),
-            name: name,
-            category: category,
-            active: active,
-        }),
-    })
-    .then(response => response.json())
-    .then(data => {
-        const messageDiv = document.getElementById('add-merchant-message');
-        if (data.success) {
-            messageDiv.textContent = data.message;
-            messageDiv.className = 'message success';
-            document.getElementById('add-merchant-form').reset();
+// Load and display database schema
+function loadSchema() {
+    fetch('/api/tables')
+        .then(response => {
+            if (!response.ok) throw new Error('Failed to load schema');
+            return response.json();
+        })
+        .then(tables => {
+            const container = document.getElementById('schema-list');
             
-            // Reload merchants list
-            setTimeout(() => loadMerchants(), 1000);
-        } else {
-            messageDiv.textContent = data.error || 'An error occurred';
-            messageDiv.className = 'message error';
-        }
-        
-        // Clear message after 5 seconds
-        setTimeout(() => {
-            messageDiv.className = 'message';
-        }, 5000);
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        const messageDiv = document.getElementById('add-merchant-message');
-        messageDiv.textContent = 'An error occurred while adding the merchant';
-        messageDiv.className = 'message error';
-    });
+            if (tables.length === 0) {
+                container.innerHTML = '<div class="empty-state"><p>No tables found in the database.</p></div>';
+                return;
+            }
+            
+            container.innerHTML = tables.map(table => `
+                <div class="schema-table">
+                    <div class="table-header">
+                        <h3>${table.name}</h3>
+                        <span class="row-count">${table.row_count} row(s)</span>
+                    </div>
+                    <table class="schema-columns-table">
+                        <thead>
+                            <tr>
+                                <th>Column</th>
+                                <th>Type</th>
+                                <th>Primary Key</th>
+                                <th>Unique</th>
+                                <th>Nullable</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${table.columns.map(col => `
+                                <tr>
+                                    <td><code>${col.name}</code></td>
+                                    <td><code>${col.data_type}</code></td>
+                                    <td>${col.primary_key ? '✓' : ''}</td>
+                                    <td>${col.unique ? '✓' : ''}</td>
+                                    <td>${col.nullable ? '✓' : ''}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `).join('');
+        })
+        .catch(error => console.error('Error loading schema:', error));
+}
+
+// Open add merchant modal
+function openAddMerchantModal() {
+    // Load categories for the select
+    fetch('/api/categories')
+        .then(response => {
+            if (!response.ok) throw new Error('Failed to load categories');
+            return response.json();
+        })
+        .then(categories => {
+            const select = document.getElementById('add-merchant-category');
+            select.innerHTML = '<option value="">Select a category...</option>' +
+                categories.map(cat => `<option value="${cat.name}">${cat.name}</option>`).join('');
+        })
+        .catch(error => console.error('Error loading categories:', error));
+    
+    // Clear form
+    document.getElementById('add-merchant-form').reset();
+    document.getElementById('add-merchant-message').textContent = '';
+    
+    // Show modal
+    document.getElementById('addMerchantModal').style.display = 'block';
+}
+
+// Close add merchant modal
+function closeAddMerchantModal() {
+    document.getElementById('addMerchantModal').style.display = 'none';
+}
+
+// Add merchant form submission
+document.addEventListener('DOMContentLoaded', () => {
+    const addForm = document.getElementById('add-merchant-form');
+    if (addForm) {
+        addForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const id = document.getElementById('add-merchant-id').value;
+            const name = document.getElementById('add-merchant-name').value;
+            const category = document.getElementById('add-merchant-category').value;
+            const active = document.getElementById('add-merchant-active').checked;
+            
+            fetch('/api/merchants', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    id: parseInt(id),
+                    name: name,
+                    category: category,
+                    active: active,
+                }),
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                const messageDiv = document.getElementById('add-merchant-message');
+                if (data.success) {
+                    messageDiv.textContent = data.message;
+                    messageDiv.className = 'message success';
+                    setTimeout(() => {
+                        closeAddMerchantModal();
+                        loadMerchants();
+                        showRefreshNotification('Merchant added successfully');
+                    }, 500);
+                } else {
+                    messageDiv.textContent = data.message || 'An error occurred';
+                    messageDiv.className = 'message error';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                const messageDiv = document.getElementById('add-merchant-message');
+                messageDiv.textContent = 'An error occurred while adding the merchant';
+                messageDiv.className = 'message error';
+            });
+        });
+    }
 });
 
-// Delete merchant
+// Delete merchant with modal
 function deleteMerchant(id) {
-    if (confirm('Are you sure you want to delete this merchant?')) {
-        fetch(`/api/merchants/${id}`, {
-            method: 'DELETE',
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                loadMerchants();
-                alert('Merchant deleted successfully');
-            } else {
-                alert('Error: ' + data.error);
+    // Fetch merchant details for confirmation
+    fetch(`/api/merchants/${id}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
+            return response.json();
+        })
+        .then(merchant => {
+            merchantToDelete = id;
+            document.getElementById('delete-merchant-name').textContent = merchant.name;
+            document.getElementById('deleteMerchantModal').style.display = 'block';
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('An error occurred while deleting the merchant');
+            alert('Could not load merchant details');
         });
-    }
 }
 
-// Edit merchant (placeholder)
-function editMerchant(id) {
-    alert('Edit functionality would be implemented here for merchant ' + id);
-    // In a full implementation, this would open an edit form
+// Close delete modal
+function closeDeleteModal() {
+    document.getElementById('deleteMerchantModal').style.display = 'none';
+    merchantToDelete = null;
 }
+
+// Confirm delete
+function confirmDelete() {
+    if (merchantToDelete === null) return;
+    
+    fetch(`/api/merchants/${merchantToDelete}`, {
+        method: 'DELETE',
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Failed to delete merchant');
+        return response.json();
+    })
+    .then(data => {
+        closeDeleteModal();
+        if (data.success) {
+            loadMerchants();
+            showRefreshNotification('Merchant deleted successfully');
+        } else {
+            alert('Error: ' + (data.message || data.error));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while deleting the merchant');
+        closeDeleteModal();
+    });
+}
+
+// Edit merchant with modal
+function editMerchant(id) {
+    // Fetch merchant details
+    fetch(`/api/merchants/${id}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(merchant => {
+            // Load categories
+            fetch('/api/categories')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to load categories');
+                    }
+                    return response.json();
+                })
+                .then(categories => {
+                    // Populate form
+                    document.getElementById('edit-merchant-id').value = merchant.id;
+                    document.getElementById('edit-merchant-name').value = merchant.name;
+                    document.getElementById('edit-merchant-active').checked = merchant.active;
+                    
+                    // Populate category select
+                    const select = document.getElementById('edit-merchant-category');
+                    select.innerHTML = '<option value="">Select a category...</option>' +
+                        categories.map(cat => `<option value="${cat.name}" ${cat.name === merchant.category ? 'selected' : ''}>${cat.name}</option>`).join('');
+                    
+                    // Clear message
+                    document.getElementById('edit-merchant-message').textContent = '';
+                    
+                    // Show modal
+                    document.getElementById('editMerchantModal').style.display = 'block';
+                })
+                .catch(error => {
+                    console.error('Error loading categories:', error);
+                    alert('Could not load categories');
+                });
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Could not load merchant details');
+        });
+}
+
+// Close edit modal
+function closeEditModal() {
+    document.getElementById('editMerchantModal').style.display = 'none';
+}
+
+// Handle edit form submission
+document.addEventListener('DOMContentLoaded', () => {
+    const editForm = document.getElementById('edit-merchant-form');
+    if (editForm) {
+        editForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const merchantId = parseInt(document.getElementById('edit-merchant-id').value);
+            const updates = {
+                name: document.getElementById('edit-merchant-name').value,
+                category: document.getElementById('edit-merchant-category').value,
+                active: document.getElementById('edit-merchant-active').checked
+            };
+            
+            fetch(`/api/merchants/${merchantId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(updates)
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Failed to update merchant');
+                return response.json();
+            })
+            .then(data => {
+                const messageDiv = document.getElementById('edit-merchant-message');
+                if (data.success) {
+                    messageDiv.textContent = 'Merchant updated successfully';
+                    messageDiv.className = 'message success';
+                    setTimeout(() => {
+                        closeEditModal();
+                        loadMerchants();
+                        showRefreshNotification('Merchant updated');
+                    }, 1000);
+                } else {
+                    messageDiv.textContent = data.message || 'An error occurred';
+                    messageDiv.className = 'message error';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                const messageDiv = document.getElementById('edit-merchant-message');
+                messageDiv.textContent = 'An error occurred while updating the merchant';
+                messageDiv.className = 'message error';
+            });
+        });
+    }
+});
+
+// Close modals when clicking outside
+window.addEventListener('click', (event) => {
+    const addModal = document.getElementById('addMerchantModal');
+    const editModal = document.getElementById('editMerchantModal');
+    const deleteModal = document.getElementById('deleteMerchantModal');
+    
+    if (event.target === addModal) {
+        closeAddMerchantModal();
+    }
+    if (event.target === editModal) {
+        closeEditModal();
+    }
+    if (event.target === deleteModal) {
+        closeDeleteModal();
+    }
+});
 
 // Execute SQL query
 function executeQuery() {
@@ -179,7 +431,10 @@ function executeQuery() {
         },
         body: JSON.stringify({ sql: sql }),
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) throw new Error('Query execution failed');
+        return response.json();
+    })
     .then(data => {
         const resultDiv = document.getElementById('query-result');
         
@@ -271,5 +526,6 @@ function showRefreshNotification(message) {
 }
 
 // Load initial data
+loadSchema();
 loadMerchants();
 loadCategories();

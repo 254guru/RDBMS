@@ -21,13 +21,13 @@ What this project provides
   - HashIndex for PRIMARY KEY / UNIQUE enforcement
   - Regex-based SQL parser (CREATE/INSERT/SELECT/UPDATE/DELETE/DROP)
   - Nested-loop JOIN support
-  - Interactive REPL and a small Flask web demo
+  - Interactive REPL and a Flask web demo with dynamic UI
 
 Key files
 ---------
 
 - `rdbms/` — core engine modules (`types.py`, `storage.py`, `parser.py`, `engine.py`, `repl.py`)
-- `web_app/` — Flask demo (`app.py`, `templates/`, `static/`)
+- `web_app/` — Flask demo with REST API and dynamic modal-based UI
 - `example.py` — short demo script
 - `launch.sh` / `verify.sh` — convenience scripts
 
@@ -94,7 +94,7 @@ Contributing and next steps
 **Solution**: Run `./verify.sh` to check all imports
 
 ### Issue: Database not persisting
-**Solution**: Check `./db/` directory exists and has write permissions
+**Solution**: Check `./db/` and `web_app/db/` directories exist and have write permissions
 
 ### Issue: Web app won't start
 **Solution**: Ensure port 5000 is available, run `cd web_app && python3 app.py`
@@ -103,9 +103,9 @@ Contributing and next steps
 **Solution**: Check syntax in examples and review error message carefully
 
 **Key Files**:
-- `rdbms/storage.py` - Largest module (324 lines) with storage engine
-- `rdbms/parser.py` - SQL parsing logic (379 lines)
-- `web_app/static/style.css` - UI styling (446 lines)
+- `rdbms/storage.py` - Storage engine with table and constraint management
+- `rdbms/parser.py` - SQL parsing logic
+- `web_app/static/style.css` - UI styling with modals and animations
 
 ## Support
 
@@ -124,4 +124,5 @@ Contributing and next steps
 - Constraints properly enforced
 - Both interfaces (REPL and Web) operational
 - Comprehensive documentation
+- Dynamic UI with real-time updates
 - Ready for PesaPal JDEV26 submission

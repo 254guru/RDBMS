@@ -215,6 +215,12 @@ class ExecutionEngine:
                 for i in reversed(indices_to_update):
                     table.update(i, stmt.updates)
                     updated += 1
+                
+                if updated == 0:
+                    return QueryResult(
+                        success=False, 
+                        message=f"No rows matched the condition {col_name} {operator} '{value}'. Total rows in table: {len(table.rows)}"
+                    )
             else:
                 for i in range(len(table.rows)):
                     table.update(i, stmt.updates)
@@ -222,7 +228,7 @@ class ExecutionEngine:
 
             self.database.save_all()
             return QueryResult(
-                success=True, message=f"{updated} row(s) updated"
+                success=True, message=f"{updated} row(s) updated successfully"
             )
         except Exception as e:
             return QueryResult(success=False, message=str(e))
@@ -240,6 +246,13 @@ class ExecutionEngine:
             if stmt.where_clause:
                 col_name, operator, value = stmt.where_clause
                 rows_to_delete = table.filter(col_name, operator, value)
+                
+                if not rows_to_delete:
+                    return QueryResult(
+                        success=False, 
+                        message=f"No rows matched the condition {col_name} {operator} '{value}'. Total rows in table: {len(table.rows)}"
+                    )
+                
                 # Delete in reverse order to avoid index issues
                 for i in range(len(table.rows) - 1, -1, -1):
                     if table.rows[i] in rows_to_delete:
@@ -252,7 +265,7 @@ class ExecutionEngine:
 
             self.database.save_all()
             return QueryResult(
-                success=True, message=f"{deleted} row(s) deleted"
+                success=True, message=f"{deleted} row(s) deleted successfully"
             )
         except Exception as e:
             return QueryResult(success=False, message=str(e))

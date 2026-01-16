@@ -52,19 +52,6 @@ def init_database():
             ]
         )
         database.create_table(categories_schema)
-        
-        # Add sample categories
-        sample_categories = [
-            {"id": 1, "name": "Electronics", "description": "Electronics and gadgets"},
-            {"id": 2, "name": "Groceries", "description": "Food and groceries"},
-            {"id": 3, "name": "Fashion", "description": "Clothing and fashion"},
-            {"id": 4, "name": "Services", "description": "Professional services"},
-        ]
-        
-        for cat in sample_categories:
-            database.get_table("categories").insert(cat)
-        
-        database.save_all()
 
 
 init_database()
@@ -190,6 +177,32 @@ def merchants_by_category(category):
     merchants_table = database.get_table("merchants")
     merchants = merchants_table.filter("category", "=", category)
     return jsonify([row.to_dict() for row in merchants])
+
+
+@app.route("/api/tables", methods=["GET"])
+def list_tables():
+    """Get list of all tables with their schemas."""
+    tables = []
+    for table_name, table in database.tables.items():
+        table_info = {
+            "name": table_name,
+            "row_count": len(table.rows),
+            "columns": []
+        }
+        
+        # Add column information
+        for col in table.schema.columns:
+            table_info["columns"].append({
+                "name": col.name,
+                "data_type": col.data_type.value,
+                "primary_key": col.primary_key,
+                "unique": col.unique,
+                "nullable": col.nullable
+            })
+        
+        tables.append(table_info)
+    
+    return jsonify(tables)
 
 
 @app.route("/api/query", methods=["POST"])

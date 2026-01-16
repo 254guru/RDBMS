@@ -15,45 +15,19 @@
 
         <nav class="tabs">
             <button class="tab-button active" data-tab="merchants">Merchants</button>
-            <button class="tab-button" data-tab="add-merchant">Add Merchant</button>
             <button class="tab-button" data-tab="categories">Categories</button>
             <button class="tab-button" data-tab="query">SQL Query</button>
         </nav>
 
         <!-- Merchants Tab -->
         <div id="merchants" class="tab-content active">
-            <h2>All Merchants</h2>
+            <div class="tab-header">
+                <h2>All Merchants</h2>
+                <button class="btn btn-primary" onclick="openAddMerchantModal()">+ Add Merchant</button>
+            </div>
             <div id="merchants-list" class="merchants-grid">
                 <!-- Populated by JavaScript -->
             </div>
-        </div>
-
-        <!-- Add Merchant Tab -->
-        <div id="add-merchant" class="tab-content">
-            <h2>Add New Merchant</h2>
-            <form id="add-merchant-form" class="form">
-                <div class="form-group">
-                    <label for="merchant-id">Merchant ID:</label>
-                    <input type="number" id="merchant-id" required>
-                </div>
-                <div class="form-group">
-                    <label for="merchant-name">Name:</label>
-                    <input type="text" id="merchant-name" required>
-                </div>
-                <div class="form-group">
-                    <label for="merchant-category">Category:</label>
-                    <select id="merchant-category" required>
-                        <option value="">Select a category...</option>
-                        <!-- Populated by JavaScript -->
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="merchant-active">Active:</label>
-                    <input type="checkbox" id="merchant-active" checked>
-                </div>
-                <button type="submit" class="btn btn-primary">Add Merchant</button>
-                <div id="add-merchant-message" class="message"></div>
-            </form>
         </div>
 
         <!-- Categories Tab -->
@@ -67,12 +41,113 @@
         <!-- SQL Query Tab -->
         <div id="query" class="tab-content">
             <h2>Execute SQL Query</h2>
+            
+            <!-- Schema Section -->
+            <div class="schema-section">
+                <h3>
+                    <span class="toggle-arrow">▶</span>
+                    Database Schema
+                </h3>
+                <div id="schema-list" class="schema-list" style="display: none;">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+
             <div class="query-section">
                 <textarea id="sql-query" placeholder="Enter SQL query (separate multiple statements with semicolons)..." rows="6"></textarea>
                 <p class="hint">💡 Tip: Separate multiple SQL statements with semicolons (;)</p>
                 <button onclick="executeQuery()" class="btn btn-primary">Execute</button>
             </div>
             <div id="query-result" class="query-result"></div>
+        </div>
+    </div>
+
+    <!-- Add Merchant Modal -->
+    <div id="addMerchantModal" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2>Add New Merchant</h2>
+                <button class="modal-close" onclick="closeAddMerchantModal()">×</button>
+            </div>
+            <form id="add-merchant-form" class="form">
+                <div class="form-group">
+                    <label for="add-merchant-id">Merchant ID:</label>
+                    <input type="number" id="add-merchant-id" required>
+                </div>
+                <div class="form-group">
+                    <label for="add-merchant-name">Name:</label>
+                    <input type="text" id="add-merchant-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="add-merchant-category">Category:</label>
+                    <select id="add-merchant-category" required>
+                        <option value="">Select a category...</option>
+                        <!-- Populated by JavaScript -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="add-merchant-active">Active:</label>
+                    <input type="checkbox" id="add-merchant-active" checked>
+                </div>
+                <div id="add-merchant-message" class="message"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeAddMerchantModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Merchant</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Merchant Modal -->
+    <div id="editMerchantModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Merchant</h2>
+                <button class="modal-close" onclick="closeEditModal()">×</button>
+            </div>
+            <form id="edit-merchant-form" class="form">
+                <div class="form-group">
+                    <label for="edit-merchant-id">Merchant ID:</label>
+                    <input type="number" id="edit-merchant-id" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="edit-merchant-name">Name:</label>
+                    <input type="text" id="edit-merchant-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-merchant-category">Category:</label>
+                    <select id="edit-merchant-category" required>
+                        <option value="">Select a category...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="edit-merchant-active">Active:</label>
+                    <input type="checkbox" id="edit-merchant-active">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+                <div id="edit-merchant-message" class="message"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Merchant Modal -->
+    <div id="deleteMerchantModal" class="modal">
+        <div class="modal-content modal-confirm">
+            <div class="modal-header">
+                <h2>Delete Merchant</h2>
+                <button class="modal-close" onclick="closeDeleteModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete merchant: <strong id="delete-merchant-name"></strong>?</p>
+                <p class="warning">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">Cancel</button>
+                <button type="button" class="btn btn-danger" onclick="confirmDelete()">Delete</button>
+            </div>
         </div>
     </div>
 

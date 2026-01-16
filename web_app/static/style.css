@@ -90,6 +90,22 @@ header p {
     display: block;
 }
 
+.tab-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.tab-header h2 {
+    margin: 0;
+    flex: 1;
+}
+
+.tab-header .btn {
+    white-space: nowrap;
+}
+
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -398,6 +414,85 @@ h2 {
     color: #999;
 }
 
+/* Schema Display */
+.schema-info {
+    color: #666;
+    font-size: 0.95rem;
+    margin-bottom: 20px;
+}
+
+.schema-list {
+    display: grid;
+    gap: 20px;
+}
+
+.schema-table {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.schema-table .table-header {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    color: white;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.schema-table .table-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+}
+
+.schema-table .row-count {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.schema-columns-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.schema-columns-table thead {
+    background: #f8f9fa;
+    border-bottom: 2px solid var(--border);
+}
+
+.schema-columns-table th {
+    padding: 12px 15px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--dark);
+    font-size: 0.9rem;
+}
+
+.schema-columns-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid var(--light);
+    color: #444;
+}
+
+.schema-columns-table td code {
+    background: #f5f5f5;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+    color: #d63384;
+}
+
+.schema-columns-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
 .empty-state p {
     font-size: 1.1rem;
 }
@@ -454,4 +549,227 @@ h2 {
 
 .refresh-notification {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.modal-content {
+    background-color: white;
+    margin: 5% auto;
+    padding: 0;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    width: 90%;
+    max-width: 500px;
+    animation: slideDown 0.3s ease;
+}
+
+.modal-content.modal-large {
+    max-width: 550px;
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-content.modal-confirm {
+    max-width: 400px;
+}
+
+.modal-header {
+    padding: 20px;
+    border-bottom: 1px solid var(--light);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    color: white;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 2rem;
+    cursor: pointer;
+    padding: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease;
+}
+
+.modal-close:hover {
+    transform: rotate(90deg);
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.modal-body p {
+    margin: 10px 0;
+    color: #333;
+}
+
+.modal-body .warning {
+    color: var(--danger);
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.modal-footer {
+    padding: 20px;
+    border-top: 1px solid var(--light);
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.modal-footer .btn {
+    margin: 0;
+}
+
+/* Modal Form Styling */
+.modal-content .form {
+    padding: 25px;
+}
+
+.modal-content .form-group {
+    margin-bottom: 18px;
+}
+
+.form .form-group {
+    margin-bottom: 15px;
+}
+
+.form label {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--dark);
+    font-weight: 500;
+}
+
+.form input[type="text"],
+.form input[type="number"],
+.form input[type="email"],
+.form select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+.form input[type="text"]:focus,
+.form input[type="number"]:focus,
+.form input[type="email"]:focus,
+.form select:focus {
+    outline: none;
+    border-color: var(--secondary);
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.form input[type="checkbox"] {
+    margin-right: 8px;
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.form input[type="checkbox"] + label {
+    display: inline;
+    margin: 0;
+    margin-left: 5px;
+}
+
+.message {
+    padding: 12px 15px;
+    border-radius: 4px;
+    margin-top: 10px;
+    display: none;
+}
+
+.message.success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+    display: block;
+}
+
+.message.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+    display: block;
+}
+
+/* Schema Section in Query Tab */
+.schema-section {
+    background: #f8f9fa;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+.schema-section h3 {
+    padding: 15px 20px;
+    margin: 0;
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.1rem;
+    background: #f0f0f0;
+    transition: background-color 0.2s ease;
+}
+
+.schema-section h3:hover {
+    background-color: #e9ecef;
+}
+
+.toggle-arrow {
+    display: inline-block;
+    transition: transform 0.2s ease;
+}
+
+.schema-section #schema-list {
+    padding: 20px;
 }

@@ -107,7 +107,24 @@ class Table:
         row = Row(values=values, schema=self.schema)
 
         if not row.validate():
-            raise ValueError("Row validation failed")
+            # Provide detailed validation error message
+            missing_columns = []
+            for col in self.schema.columns:
+                if col.name not in values and not col.nullable:
+                    missing_columns.append(f"{col.name} ({col.data_type.value})")
+            
+            if missing_columns:
+                raise ValueError(
+                    f"Missing required column(s): {', '.join(missing_columns)}"
+                )
+            
+            # Check for type mismatches
+            for col in self.schema.columns:
+                if col.name in values:
+                    if not col.validate(values[col.name]):
+                        raise ValueError(
+                            f"Invalid type for column '{col.name}': expected {col.data_type.value}, got {type(values[col.name]).__name__}"
+                        )
 
         # Check primary key constraint
         pk_col = self.schema.get_primary_key_column()
