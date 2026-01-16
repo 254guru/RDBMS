@@ -3,6 +3,11 @@
 // Track merchant being deleted
 let merchantToDelete = null;
 
+// Query result state
+let lastQueryResult = null;
+let queryHistory = [];
+const MAX_HISTORY = 5;
+
 // Tab switching
 document.querySelectorAll('.tab-button').forEach(button => {
     button.addEventListener('click', () => {
@@ -68,8 +73,8 @@ function loadMerchants() {
                         ${merchant.active ? '✓ Active' : '✗ Inactive'}
                     </div>
                     <div class="actions">
-                        <button class="btn-edit" onclick="editMerchant(${merchant.id})">Edit</button>
-                        <button class="btn-delete" onclick="deleteMerchant(${merchant.id})">Delete</button>
+                        <button class="btn-edit" onclick="editMerchant(${parseInt(merchant.id)})">Edit</button>
+                        <button class="btn-delete" onclick="deleteMerchant(${parseInt(merchant.id)})">Delete</button>
                     </div>
                 </div>
             `).join('');
@@ -436,36 +441,10 @@ function executeQuery() {
         return response.json();
     })
     .then(data => {
-        const resultDiv = document.getElementById('query-result');
-        
         if (data.success) {
-            let html = `<div class="success-message">${data.message}</div>`;
-            
-            if (data.data && data.data.length > 0) {
-                const columns = Object.keys(data.data[0]);
-                html += '<table>';
-                html += '<thead><tr>';
-                
-                // Table header
-                columns.forEach(col => {
-                    html += `<th>${col}</th>`;
-                });
-                html += '</tr></thead>';
-                
-                // Table body
-                html += '<tbody>';
-                data.data.forEach(row => {
-                    html += '<tr>';
-                    columns.forEach(col => {
-                        html += `<td>${row[col] !== null ? row[col] : 'NULL'}</td>`;
-                    });
-                    html += '</tr>';
-                });
-                html += '</tbody></table>';
-            }
-            
-            resultDiv.innerHTML = html;
-            resultDiv.classList.add('active');
+            renderResults(data, sql);
+            lastQueryResult = data;
+            addToHistory(sql, data);
             
             // Auto-refresh affected tables based on query type and affected table
             const sqlUpper = sql.toUpperCase();
@@ -487,6 +466,7 @@ function executeQuery() {
                 }
             }
         } else {
+            const resultDiv = document.getElementById('query-result');
             resultDiv.innerHTML = `<div class="error">Error: ${data.message}</div>`;
             resultDiv.classList.add('active');
         }
@@ -525,7 +505,238 @@ function showRefreshNotification(message) {
     }, 3000);
 }
 
-// Load initial data
-loadSchema();
-loadMerchants();
-loadCategories();
+// Clear SQL Query input
+function clearQuery() {
+    document.getElementById('sql-query').value = '';
+    document.getElementById('sql-query').focus();
+}
+
+// Toggle statement details section
+function toggleStatementDetailsSection() {
+    const section = document.getElementById('statement-details-section');
+    const arrow = document.getElementById('statement-details-arrow');
+    
+    if (section.style.display === 'none') {
+        section.style.display = 'block';
+        arrow.textContent = '▼';
+    } else {
+        section.style.display = 'none';
+        arrow.textContent = '▶';
+    }
+}
+
+// Render results with collapsible statement details section
+function renderResults(data, sql) {
+    const resultDiv = document.getElementById('query-result');
+    let html = `<div class="success-message">${data.message}</div>`;
+    
+    // Always show statement details as collapsible section
+    if (Array.isArray(data.data) && data.data.length > 0 && data.data[0].statement) {
+        // Show collapsible statements section
+        let statementIndex = 0;
+        
+        html += `<div style="margin-top: 20px;">`;
+        html += `<div onclick="toggleStatementDetailsSection()" style="padding: 12px; background: #f5f5f5; cursor: pointer; display: flex; align-items: center; gap: 10px; user-select: none; border-radius: 5px; margin-bottom: 10px;">`;
+        html += `<span id="statement-details-arrow" style="font-size: 12px;">▶</span>`;
+        html += `<h3 style="margin: 0; color: #2c3e50;">📋 Statement Details</h3>`;
+        html += `</div>`;
+        html += `<div id="statement-details-section" style="display: none;">`;
+        
+        data.data.forEach((result, idx) => {
+            if (!result.is_table_contents) {
+                html += `<div style="margin-bottom: 8px; padding: 12px; background: #f9f9f9; border-left: 3px solid #3498db; border-radius: 3px;">`;
+                html += `<strong>Statement ${statementIndex + 1}:</strong> ${result.message}`;
+                
+                if (result.data && result.data.length > 0 && typeof result.data[0] === 'object') {
+                    const columns = Object.keys(result.data[0]);
+                    html += '<table style="margin-top: 8px; width: 100%; border-collapse: collapse; font-size: 12px;">';
+                    html += '<thead><tr style="background: #e3f2fd;">';
+                    columns.forEach(col => {
+                        html += `<th style="padding: 6px; text-align: left; border: 1px solid #ddd;">${col}</th>`;
+                    });
+                    html += '</tr></thead>';
+                    html += '<tbody>';
+                    result.data.forEach(row => {
+                        html += '<tr>';
+                        columns.forEach(col => {
+                            html += `<td style="padding: 6px; border: 1px solid #ddd;">${row[col] !== null ? row[col] : 'NULL'}</td>`;
+                        });
+                        html += '</tr>';
+                    });
+                    html += '</tbody></table>';
+                }
+                
+                html += `</div>`;
+                statementIndex++;
+            }
+        });
+        
+        html += `</div></div>`;
+        
+        // Always show final table contents
+        let tableContentsStarted = false;
+        
+        data.data.forEach((result) => {
+            if (result.is_table_contents) {
+                if (!tableContentsStarted) {
+                    html += `<div style="margin-top: 30px; border-top: 3px solid #2196F3; padding-top: 20px;">`;
+                    html += `<h3 style="color: #2196F3; margin: 0 0 15px 0;">📊 Final Table Contents</h3>`;
+                    tableContentsStarted = true;
+                }
+                
+                html += `<div style="margin-bottom: 20px; padding: 15px; background: #f9f9f9; border-radius: 8px; border-left: 4px solid #4CAF50;">`;
+                html += `<h4 style="color: #4CAF50; margin: 0 0 10px 0;">${result.table}</h4>`;
+                html += `<p style="margin: 0 0 10px 0; color: #666; font-size: 13px;">${result.message}</p>`;
+                
+                if (result.data && result.data.length > 0) {
+                    const columns = Object.keys(result.data[0]);
+                    html += '<table style="width: 100%; border-collapse: collapse;">';
+                    html += '<thead><tr style="background: #4CAF50; color: white;">';
+                    columns.forEach(col => {
+                        html += `<th style="padding: 12px; text-align: left; border: 1px solid #ddd;">${col}</th>`;
+                    });
+                    html += '</tr></thead>';
+                    html += '<tbody>';
+                    result.data.forEach((row, rowIdx) => {
+                        html += `<tr style="background: ${rowIdx % 2 === 0 ? '#fff' : '#f5f5f5'};">`;
+                        columns.forEach(col => {
+                            html += `<td style="padding: 10px; border: 1px solid #ddd;">${row[col] !== null ? row[col] : 'NULL'}</td>`;
+                        });
+                        html += '</tr>';
+                    });
+                    html += '</tbody></table>';
+                }
+                html += '</div>';
+            }
+        });
+        
+        if (tableContentsStarted) {
+            html += '</div>';
+        }
+    } else if (data.data && data.data.length > 0 && typeof data.data[0] === 'object') {
+        // Single statement with table results
+        const columns = Object.keys(data.data[0]);
+        html += '<table>';
+        html += '<thead><tr>';
+        
+        // Table header
+        columns.forEach(col => {
+            html += `<th>${col}</th>`;
+        });
+        html += '</tr></thead>';
+        
+        // Table body
+        html += '<tbody>';
+        data.data.forEach(row => {
+            html += '<tr>';
+            columns.forEach(col => {
+                html += `<td>${row[col] !== null ? row[col] : 'NULL'}</td>`;
+            });
+            html += '</tr>';
+        });
+        html += '</tbody></table>';
+    }
+    
+    resultDiv.innerHTML = html;
+    resultDiv.classList.add('active');
+}
+
+// Export results as JSON or CSV
+function exportResults(format) {
+    if (!lastQueryResult) {
+        alert('No results to export');
+        return;
+    }
+    
+    const data = lastQueryResult.data;
+    const timestamp = new Date().toISOString().slice(0, 10);
+    
+    if (format === 'json') {
+        const jsonData = JSON.stringify(data, null, 2);
+        downloadFile(jsonData, `query-results-${timestamp}.json`, 'application/json');
+    } else if (format === 'csv') {
+        // Extract table contents and convert to CSV
+        let csvContent = '';
+        
+        if (Array.isArray(data.data) && data.data.length > 0) {
+            data.data.forEach((result) => {
+                if (result.is_table_contents && result.data && result.data.length > 0) {
+                    csvContent += `\n"${result.table}"\n`;
+                    const columns = Object.keys(result.data[0]);
+                    csvContent += columns.join(',') + '\n';
+                    
+                    result.data.forEach(row => {
+                        csvContent += columns.map(col => {
+                            const val = row[col] !== null ? row[col] : '';
+                            return `"${String(val).replace(/"/g, '""')}"`;
+                        }).join(',') + '\n';
+                    });
+                }
+            });
+        }
+        
+        downloadFile(csvContent, `query-results-${timestamp}.csv`, 'text/csv');
+    }
+}
+
+// Helper function to download file
+function downloadFile(content, filename, mimeType) {
+    const blob = new Blob([content], { type: mimeType });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+}
+
+// Add query to history
+function addToHistory(sql, result) {
+    queryHistory.unshift({
+        sql: sql,
+        timestamp: new Date().toLocaleString(),
+        message: result.message
+    });
+    
+    // Keep only recent queries
+    if (queryHistory.length > MAX_HISTORY) {
+        queryHistory.pop();
+    }
+    
+    updateHistoryDisplay();
+}
+
+// Update history display
+function updateHistoryDisplay() {
+    const historyDiv = document.getElementById('query-history');
+    const countSpan = document.getElementById('history-count');
+    
+    if (queryHistory.length === 0) {
+        historyDiv.innerHTML = '<p class="empty-state">No queries executed yet</p>';
+        countSpan.textContent = '(0)';
+        return;
+    }
+    
+    countSpan.textContent = `(${queryHistory.length})`;
+    historyDiv.innerHTML = queryHistory.map((item, idx) => `
+        <div class="history-item">
+            <div class="history-header">
+                <span class="history-time">${item.timestamp}</span>
+                <button class="btn-history" onclick="loadFromHistory(${idx})" title="Re-run query">↻</button>
+            </div>
+            <code class="history-sql">${item.sql}</code>
+            <p class="history-message">${item.message}</p>
+        </div>
+    `).join('');
+}
+
+// Load query from history
+function loadFromHistory(index) {
+    if (index >= 0 && index < queryHistory.length) {
+        document.getElementById('sql-query').value = queryHistory[index].sql;
+        document.getElementById('sql-query').focus();
+    }
+}
+

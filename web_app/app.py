@@ -60,11 +60,22 @@ init_database()
 @app.route("/")
 def index():
     """Home page - list all merchants."""
-    merchants_table = database.get_table("merchants")
-    merchants = [row.to_dict() for row in merchants_table.scan()]
+    merchants = []
+    categories = []
     
-    categories_table = database.get_table("categories")
-    categories = [row.to_dict() for row in categories_table.scan()]
+    try:
+        merchants_table = database.get_table("merchants")
+        if merchants_table:
+            merchants = [row.to_dict() for row in merchants_table.scan()]
+    except:
+        pass
+    
+    try:
+        categories_table = database.get_table("categories")
+        if categories_table:
+            categories = [row.to_dict() for row in categories_table.scan()]
+    except:
+        pass
     
     return render_template("index.html", merchants=merchants, categories=categories)
 
@@ -100,6 +111,8 @@ def merchants_api():
     else:
         # GET - return all merchants
         merchants_table = database.get_table("merchants")
+        if not merchants_table:
+            return jsonify([])
         merchants = [row.to_dict() for row in merchants_table.scan()]
         return jsonify(merchants)
 
@@ -167,6 +180,8 @@ def merchant_detail(merchant_id):
 def categories_api():
     """API endpoint for categories."""
     categories_table = database.get_table("categories")
+    if not categories_table:
+        return jsonify([])
     categories = [row.to_dict() for row in categories_table.scan()]
     return jsonify(categories)
 
@@ -175,6 +190,8 @@ def categories_api():
 def merchants_by_category(category):
     """Get merchants in a specific category."""
     merchants_table = database.get_table("merchants")
+    if not merchants_table:
+        return jsonify([])
     merchants = merchants_table.filter("category", "=", category)
     return jsonify([row.to_dict() for row in merchants])
 
@@ -232,7 +249,7 @@ def execute_query():
             }), 400
         
         # Execute each statement
-        last_result = None
+        all_results = []
         affected_tables = set()
         
         for statement in statements:
@@ -243,15 +260,57 @@ def execute_query():
             if hasattr(stmt, 'table_name'):
                 affected_tables.add(stmt.table_name)
             
-            last_result = result
+            # Store each result
+            all_results.append({
+                "statement": statement,
+                "success": result.success,
+                "message": result.message,
+                "data": result.data,
+                "table": stmt.table_name if hasattr(stmt, 'table_name') else None
+            })
         
-        # Return the result of the last statement
+        # Get the last result for primary response
+        last_result = all_results[-1] if all_results else None
         affected_table = list(affected_tables)[0] if affected_tables else None
         
+        # If multiple statements, fetch final table contents and show summary
+        if len(all_results) > 1:
+            summary_message = f"Executed {len(all_results)} statements successfully"
+            
+            # Fetch final contents of affected tables
+            table_contents = {}
+            for table_name in affected_tables:
+                try:
+                    table = database.get_table(table_name)
+                    table_contents[table_name] = [row.to_dict() for row in table.scan()]
+                except:
+                    pass
+            
+            # Add table contents to results with labels
+            results_with_tables = all_results.copy()
+            for table_name, contents in table_contents.items():
+                if contents:  # Only add if table has data
+                    results_with_tables.append({
+                        "statement": f"-- Final contents of {table_name}",
+                        "success": True,
+                        "message": f"Table '{table_name}' has {len(contents)} row(s)",
+                        "data": contents,
+                        "table": table_name,
+                        "is_table_contents": True
+                    })
+            
+            return jsonify({
+                "success": True,
+                "message": summary_message,
+                "data": results_with_tables,
+                "affected_table": affected_table
+            })
+        
+        # Single statement - return normal result
         return jsonify({
-            "success": last_result.success,
-            "message": last_result.message,
-            "data": last_result.data,
+            "success": last_result["success"],
+            "message": last_result["message"],
+            "data": last_result["data"],
             "affected_table": affected_table
         })
     

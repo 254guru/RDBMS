@@ -54,11 +54,28 @@
             </div>
 
             <div class="query-section">
-                <textarea id="sql-query" placeholder="Enter SQL query (separate multiple statements with semicolons)..." rows="6"></textarea>
+                <div class="query-controls">
+                    <textarea id="sql-query" placeholder="Enter SQL query (separate multiple statements with semicolons)..." rows="6"></textarea>
+                    <button onclick="clearQuery()" class="btn btn-secondary" title="Clear query">✕ Clear</button>
+                </div>
                 <p class="hint">💡 Tip: Separate multiple SQL statements with semicolons (;)</p>
-                <button onclick="executeQuery()" class="btn btn-primary">Execute</button>
+                <div class="query-actions">
+                    <button onclick="executeQuery()" class="btn btn-primary">Execute</button>
+                    <div class="result-controls">
+                        <button onclick="exportResults('json')" class="btn btn-secondary">Export JSON</button>
+                        <button onclick="exportResults('csv')" class="btn btn-secondary">Export CSV</button>
+                    </div>
+                </div>
             </div>
             <div id="query-result" class="query-result"></div>
+            
+            <!-- Query History Section -->
+            <div class="history-section">
+                <h3>Query History <span id="history-count">(0)</span></h3>
+                <div id="query-history" class="query-history">
+                    <p class="empty-state">No queries executed yet</p>
+                </div>
+            </div>
         </div>
     </div>
 

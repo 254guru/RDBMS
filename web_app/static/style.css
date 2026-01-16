@@ -773,3 +773,136 @@ h2 {
 .schema-section #schema-list {
     padding: 20px;
 }
+/* Query Controls */
+.query-controls {
+    position: relative;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+}
+
+.query-controls textarea {
+    flex: 1;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    resize: vertical;
+}
+
+.query-controls button {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: #e74c3c;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.query-controls button:hover {
+    opacity: 1;
+}
+
+/* Query Actions */
+.query-actions {
+    display: flex;
+    gap: 10px;
+    margin: 10px 0;
+    flex-wrap: wrap;
+}
+
+.result-controls {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.result-controls .btn {
+    flex-shrink: 0;
+}
+
+/* History Section */
+.history-section {
+    margin-top: 40px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 5px;
+}
+
+.history-section h3 {
+    margin-bottom: 15px;
+    color: #2c3e50;
+    font-size: 1.1rem;
+}
+
+.query-history {
+    display: grid;
+    gap: 10px;
+}
+
+.history-item {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 12px;
+    transition: box-shadow 0.2s ease;
+}
+
+.history-item:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.history-time {
+    font-size: 12px;
+    color: #7f8c8d;
+}
+
+.btn-history {
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background-color 0.2s;
+}
+
+.btn-history:hover {
+    background: #2980b9;
+}
+
+.history-sql {
+    display: block;
+    background: #f5f5f5;
+    padding: 8px;
+    border-radius: 3px;
+    border-left: 3px solid #3498db;
+    margin: 8px 0;
+    max-height: 60px;
+    overflow-y: auto;
+    font-size: 12px;
+    color: #2c3e50;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+.history-message {
+    font-size: 12px;
+    color: #7f8c8d;
+    margin: 8px 0 0 0;
+}
