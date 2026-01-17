@@ -15,6 +15,7 @@ from rdbms.storage import Database
 from rdbms.parser import SQLParser, ParseError
 from rdbms.engine import ExecutionEngine
 from rdbms.types import Schema, Column, DataType
+from rdbms.security import InputValidator, SQLInjectionDetector
 
 # Configure logging
 logging.basicConfig(
@@ -98,30 +99,36 @@ def index():
 
 
 def validate_merchant_input(data):
-    """Validate merchant input data."""
+    """Validate merchant input data using security validators."""
     errors = []
     
     if not data:
         errors.append("Request data is required")
         return errors
     
-    try:
-        if "id" not in data:
-            errors.append("'id' field is required")
-        else:
-            int(data.get("id"))  # Validate it's an integer
-    except (ValueError, TypeError):
-        errors.append("'id' must be a valid integer")
+    # Validate ID
+    if "id" not in data:
+        errors.append("'id' field is required")
+    else:
+        is_valid, error = InputValidator.validate_integer(data.get("id"), "id")
+        if not is_valid:
+            errors.append(error)
     
-    if not data.get("name"):
+    # Validate name
+    if "name" not in data:
         errors.append("'name' field is required")
-    elif not isinstance(data.get("name"), str):
-        errors.append("'name' must be a string")
+    else:
+        is_valid, error = InputValidator.validate_string(data.get("name"), "name", min_length=1, max_length=255)
+        if not is_valid:
+            errors.append(error)
     
-    if not data.get("category"):
+    # Validate category
+    if "category" not in data:
         errors.append("'category' field is required")
-    elif not isinstance(data.get("category"), str):
-        errors.append("'category' must be a string")
+    else:
+        is_valid, error = InputValidator.validate_string(data.get("category"), "category", min_length=1, max_length=255)
+        if not is_valid:
+            errors.append(error)
     
     return errors
 
@@ -364,6 +371,18 @@ def execute_query():
                 "data": [],
                 "affected_table": None
             }), 400
+        
+        # Validate SQL for injection attempts before executing
+        for statement in statements:
+            is_valid, error = InputValidator.validate_sql_statement(statement)
+            if not is_valid:
+                logger.warning(f"SQL injection attempt detected: {error} - SQL: {statement[:50]}")
+                return jsonify({
+                    "success": False,
+                    "message": f"Security validation failed: {error}",
+                    "data": [],
+                    "affected_table": None
+                }), 400
         
         # Execute each statement
         all_results = []

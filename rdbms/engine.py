@@ -2,6 +2,7 @@
 Execution engine for executing parsed SQL statements.
 """
 
+import logging
 from typing import List, Dict, Any, Optional, Tuple
 from dataclasses import dataclass
 from rdbms.parser import (
@@ -15,6 +16,8 @@ from rdbms.parser import (
 )
 from rdbms.storage import Database, Table
 from rdbms.types import Schema, Column
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass

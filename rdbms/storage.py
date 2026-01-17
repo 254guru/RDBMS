@@ -4,9 +4,12 @@ Storage engine for persisting tables to disk and managing indexing.
 
 import json
 import os
+import logging
 from typing import Dict, List, Optional, Set, Tuple, Any
 from pathlib import Path
 from rdbms.types import Schema, Row, Column, DataType
+
+logger = logging.getLogger(__name__)
 
 
 class Index:
@@ -114,6 +117,7 @@ class Table:
                     missing_columns.append(f"{col.name} ({col.data_type.value})")
             
             if missing_columns:
+                logger.error(f"INSERT into {self.schema.table_name} failed: Missing columns {missing_columns}")
                 raise ValueError(
                     f"Missing required column(s): {', '.join(missing_columns)}"
                 )
@@ -122,6 +126,7 @@ class Table:
             for col in self.schema.columns:
                 if col.name in values:
                     if not col.validate(values[col.name]):
+                        logger.error(f"INSERT into {self.schema.table_name} failed: Type mismatch in column '{col.name}'")
                         raise ValueError(
                             f"Invalid type for column '{col.name}': expected {col.data_type.value}, got {type(values[col.name]).__name__}"
                         )
@@ -132,6 +137,7 @@ class Table:
             pk_value = values[pk_col.name]
             existing = self.primary_key_index.lookup(pk_value)
             if existing:
+                logger.warning(f"INSERT into {self.schema.table_name} failed: Duplicate primary key {pk_col.name}={pk_value}")
                 raise ValueError(
                     f"Primary key {pk_col.name}={pk_value} already exists"
                 )
@@ -142,6 +148,7 @@ class Table:
                 value = values[col_name]
                 existing = index.lookup(value)
                 if existing:
+                    logger.warning(f"INSERT into {self.schema.table_name} failed: Unique constraint violation on {col_name}={value}")
                     raise ValueError(f"Unique constraint violated on {col_name}")
 
         # Add row

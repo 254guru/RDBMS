@@ -4,10 +4,12 @@ Supports simplified SQL syntax for CRUD operations and table creation.
 """
 
 import re
+import logging
 from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import dataclass
 from rdbms.types import Column, DataType
 
+logger = logging.getLogger(__name__)
 
 class ParseError(Exception):
     """Raised when parsing fails."""
@@ -77,23 +79,31 @@ class SQLParser:
         """Parse a SQL statement."""
         sql = sql.strip()
         if not sql:
+            logger.warning("Empty SQL statement attempted")
             raise ParseError("Empty query")
 
         # Normalize whitespace
         sql = re.sub(r"\s+", " ", sql)
+        logger.debug(f"Parsing SQL: {sql[:100]}")
 
         # Check command type
         if sql.upper().startswith("CREATE TABLE"):
+            logger.debug("Parsing CREATE TABLE statement")
             return self._parse_create_table(sql)
         elif sql.upper().startswith("INSERT"):
+            logger.debug("Parsing INSERT statement")
             return self._parse_insert(sql)
         elif sql.upper().startswith("SELECT"):
+            logger.debug("Parsing SELECT statement")
             return self._parse_select(sql)
         elif sql.upper().startswith("UPDATE"):
+            logger.debug("Parsing UPDATE statement")
             return self._parse_update(sql)
         elif sql.upper().startswith("DELETE"):
+            logger.debug("Parsing DELETE statement")
             return self._parse_delete(sql)
         elif sql.upper().startswith("DROP TABLE"):
+            logger.debug("Parsing DROP TABLE statement")
             return self._parse_drop_table(sql)
         elif sql.upper().startswith("EXPLAIN"):
             return self._parse_explain(sql)

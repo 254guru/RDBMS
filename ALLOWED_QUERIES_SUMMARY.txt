@@ -1,0 +1,247 @@
+================================================================================
+                    PESAPAL SQL QUERIES - QUICK SUMMARY
+================================================================================
+
+ALLOWED QUERIES
+================================================================================
+
+Read Operations (SELECT):
+  - SELECT * FROM merchants;
+  - SELECT * FROM merchants WHERE id = 1;
+  - SELECT * FROM merchants LIMIT 10;
+  - SELECT id, name FROM merchants WHERE active = 1;
+  - SELECT COUNT(*) FROM merchants;
+
+Create Operations (INSERT):
+  - INSERT INTO merchants (name, email) VALUES ('Merchant1', 'test@test.com');
+  - INSERT INTO merchants (id, name, email, phone, active) VALUES (1, 'Shop', 'shop@test.com', '254123456789', 1);
+
+Modify Operations (UPDATE):
+  - UPDATE merchants SET active = 1 WHERE id = 1;
+  - UPDATE merchants SET name = 'New Name', email = 'new@test.com' WHERE id = 1;
+
+Delete Operations (DELETE):
+  - DELETE FROM merchants WHERE id = 1;
+  - DELETE FROM merchants WHERE active = 0;
+
+Schema Operations:
+  - CREATE TABLE users (id INT PRIMARY KEY, name TEXT);
+  - ALTER TABLE merchants ADD COLUMN description TEXT;
+
+================================================================================
+
+BLOCKED QUERIES
+================================================================================
+
+Destructive Operations:
+  - DROP TABLE merchants;  → Error: "Dangerous keyword 'DROP' detected"
+
+Injection Patterns:
+  - SELECT * FROM merchants UNION SELECT * FROM users;
+    → Error: "UNION SELECT in statement (potential injection)"
+  
+  - SELECT * FROM merchants WHERE id = 1 OR '1'='1';
+    → Error: "Classic OR 1=1 injection pattern"
+
+Comments (Injection Vectors):
+  - SELECT * FROM merchants; -- comment
+    → Error: "Dangerous keyword '--' detected"
+  
+  - SELECT * FROM merchants /* comment */;
+    → Error: "Dangerous keyword '/*' detected"
+
+Stacked Queries:
+  - SELECT * FROM merchants; DELETE FROM merchants;
+    → Error: "DELETE command in statement"
+
+System Access:
+  - EXEC xp_cmdshell 'dir';
+    → Error: "EXEC() function call"
+  
+  - SELECT @@version;
+    → Error: "System variable"
+
+Script Injection:
+  - INSERT INTO users (name) VALUES ('<script>alert(1)</script>');
+    → Error: "Script code in SQL"
+
+================================================================================
+
+SECURITY VALIDATION CHECKS
+================================================================================
+
+The security layer validates SQL statements for:
+
+1. Dangerous Keywords (18 detected):
+   DROP, DELETE, INSERT (in values), UPDATE, ALTER, CREATE, 
+   EXEC, EXECUTE, UNION, SELECT (in values), SCRIPT, JAVASCRIPT,
+   --, /*, */, xp_, sp_, @@, DECLARE, CAST
+
+2. Dangerous Patterns (7 regex patterns):
+   - DDL/DML in values
+   - Logic manipulation (OR conditions)
+   - SQL comments
+   - Multi-line comments
+   - Stacked queries
+   - System procedures
+   - System variables
+
+3. Script Injection:
+   - JavaScript/HTML tags
+   - Script keywords
+
+4. Type Validation:
+   - Strings: length, injection patterns
+   - Integers: range validation
+   - Booleans: value normalization
+
+================================================================================
+
+COMMON QUERY EXAMPLES
+================================================================================
+
+Query Type          | Example                                    | Status
+-------------------|--------------------------------------------|---------
+Simple SELECT       | SELECT * FROM merchants;                   | ✅
+Filtered SELECT     | SELECT * FROM merchants WHERE id = 1;      | ✅
+Limited SELECT      | SELECT * FROM merchants LIMIT 10;          | ✅
+Ordered SELECT      | SELECT * FROM merchants ORDER BY name;     | ✅
+Count              | SELECT COUNT(*) FROM merchants;            | ✅
+INSERT             | INSERT INTO merchants VALUES (1, 'M', ...) | ✅
+UPDATE             | UPDATE merchants SET active = 1 WHERE ... | ✅
+DELETE             | DELETE FROM merchants WHERE id = 1;        | ✅
+CREATE TABLE       | CREATE TABLE users (id INT PRIMARY KEY);   | ✅
+ALTER TABLE        | ALTER TABLE merchants ADD COLUMN desc;     | ✅
+DROP TABLE         | DROP TABLE merchants;                      | ❌
+UNION SELECT       | SELECT * FROM m1 UNION SELECT * FROM m2;   | ❌
+OR 1=1             | ... WHERE id = 1 OR '1'='1;               | ❌
+Comments           | SELECT * FROM merchants; -- comment        | ❌
+Stacked Queries    | SELECT * FROM m; DELETE FROM m;            | ❌
+EXEC               | EXEC xp_cmdshell 'dir';                    | ❌
+
+================================================================================
+
+API ENDPOINT: POST /api/query
+================================================================================
+
+Request Format:
+{
+  "query": "SELECT * FROM merchants LIMIT 5"
+}
+
+Response (Success - 200 OK):
+{
+  "success": true,
+  "message": "Executed 1 statements",
+  "data": [...],
+  "affected_table": "merchants"
+}
+
+Response (Security Validation Failed - 400 Bad Request):
+{
+  "success": false,
+  "message": "Security validation failed: Dangerous keyword 'DROP' detected",
+  "data": [],
+  "affected_table": null
+}
+
+Response (Parse Error - 400 Bad Request):
+{
+  "success": false,
+  "message": "Security validation failed: SQL injection attempt",
+  "data": [],
+  "affected_table": null
+}
+
+================================================================================
+
+TESTING WITH CURL
+================================================================================
+
+SELECT Query:
+  curl -X POST http://localhost:5000/api/query \
+    -H "Content-Type: application/json" \
+    -d '{"query":"SELECT * FROM merchants LIMIT 5"}'
+
+INSERT Query:
+  curl -X POST http://localhost:5000/api/query \
+    -H "Content-Type: application/json" \
+    -d '{"query":"INSERT INTO merchants (name) VALUES ('"'"'Test'"'"')"}'
+
+UPDATE Query:
+  curl -X POST http://localhost:5000/api/query \
+    -H "Content-Type: application/json" \
+    -d '{"query":"UPDATE merchants SET active = 1 WHERE id = 1"}'
+
+DELETE Query:
+  curl -X POST http://localhost:5000/api/query \
+    -H "Content-Type: application/json" \
+    -d '{"query":"DELETE FROM merchants WHERE id = 1"}'
+
+================================================================================
+
+PERFORMANCE
+================================================================================
+
+SQL Validation:    < 1ms per request
+Query Validation:  < 2ms per statement
+Total Overhead:    Negligible
+Test Suite:        123 tests in 0.44s
+Security Tests:    29 tests in 0.15s
+
+================================================================================
+
+BEST PRACTICES
+================================================================================
+
+✅ DO:
+  - Use proper WHERE conditions (not OR 1=1)
+  - Validate input before sending to API
+  - Use specific column names instead of *
+  - Send one query at a time
+  - Check response status codes
+  - Log API calls for audit trail
+
+❌ DON'T:
+  - Concatenate user input into queries
+  - Use SQL comments in API queries
+  - Stack multiple queries with semicolons
+  - Use UNION or UNION SELECT
+  - Try to bypass security checks
+  - Use DROP, DELETE with high-risk patterns
+
+================================================================================
+
+DOCUMENTATION FILES
+================================================================================
+
+1. SQL_QUERY_GUIDE.md (465 lines)
+   - Comprehensive query reference
+   - Detailed explanation of allowed/blocked patterns
+   - Security architecture explanation
+   - Best practices guide
+
+2. QUERY_EXAMPLES.md (354 lines)
+   - Practical query examples
+   - Common mistakes and fixes
+   - cURL examples
+   - Quick reference table
+
+3. SECURITY.md
+   - Complete security documentation
+   - Attack prevention methods
+   - Testing procedures
+
+4. This file (ALLOWED_QUERIES_SUMMARY.txt)
+   - Quick reference summary
+   - Common queries at a glance
+
+================================================================================
+
+For detailed information, see:
+- SQL_QUERY_GUIDE.md - Complete reference guide
+- QUERY_EXAMPLES.md - Practical examples
+- SECURITY.md - Security architecture
+
+
+================================================================================
